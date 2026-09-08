@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>최저가 레이더</title>
+  <title>쿠팡 최저가</title>
   <style>
     :root { --ink:#17222d; --muted:#6e7a86; --line:#e6e9ed; --bg:#f6f7f8; --brand:#0b6b59; --accent:#e6f5ef; --white:#fff; }
     * { box-sizing:border-box; } body { margin:0; color:var(--ink); background:var(--bg); font:15px/1.55 "Pretendard","Apple SD Gothic Neo",Arial,sans-serif; }
@@ -23,11 +23,11 @@
   </style>
 </head>
 <body>
-<header><div class="wrap top"><div class="brand">최저가 <i>레이더</i></div><span class="pill">선물세트 17개 추적 중</span></div></header>
+<header><div class="wrap top"><div class="brand">쿠팡 <i>최저가</i></div><span class="pill">쿠팡 API 연동 준비 중</span></div></header>
 <main>
-  <div class="eyebrow">PRICE TRACKER</div>
-  <h1>후보 상품의 진짜 최저가를<br>한 번에 비교하세요.</h1>
-  <p class="intro">쇼핑몰 가격과 배송비를 함께 기록해 최종 결제 기준의 최저가를 보여줍니다. 현재는 입력한 가격 데이터로 동작하는 MVP입니다.</p>
+  <div class="eyebrow">COUPANG PRICE TRACKER</div>
+  <h1>쿠팡 상품의 가격을<br>한 번에 확인하세요.</h1>
+  <p class="intro">쿠팡 파트너스 API를 연결하면 상품 가격과 실제 쿠팡 상품 링크를 갱신해 보여줍니다. 현재는 연동 전 데모 데이터입니다.</p>
   <section class="summary" aria-label="요약"><div class="metric"><b id="count">17</b><span>추적 상품</span></div><div class="metric"><b id="lowest">—</b><span>가장 낮은 최종가</span></div><div class="metric"><b id="updatedAt">방금</b><span>마지막 갱신</span></div></section>
   <div class="toolbar">
     <input id="search" type="search" placeholder="상품명 또는 판매처 검색" aria-label="상품 검색">
@@ -36,16 +36,16 @@
     <button id="addBtn" class="primary">가격 추가</button>
   </div>
   <section class="panel"><div class="table-scroll"><table><thead><tr><th>상품</th><th>판매처</th><th>최종가</th><th>기준가 대비</th><th>확인 시각</th></tr></thead><tbody id="rows"></tbody></table></div><div id="empty" class="empty" hidden>검색 결과가 없습니다.</div></section>
-  <p class="notice"><strong>안내:</strong> 자동 최저가 비교를 운영하려면 각 쇼핑몰의 공식 API·제휴 데이터 피드 또는 허용된 가격 수집 수단을 연결해야 합니다. 표시 가격은 배송비 포함 여부와 옵션을 통일해 비교하세요.</p>
+  <p class="notice"><strong>안내:</strong> 실제 가격·링크는 쿠팡 파트너스 API 연동 후 갱신됩니다. 쿠팡 파트너스 활동을 통해 일정액의 수수료를 제공받을 수 있습니다. 표시 가격은 옵션과 배송 조건을 확인하세요.</p>
 </main>
 <dialog id="dialog"><form id="priceForm" class="dialog-body"><h2>가격 기록 추가</h2><p>동일 상품의 여러 판매처 가격을 쌓으면 가장 낮은 최종가가 자동으로 표시됩니다.</p><div class="fields"><input class="wide" id="pName" required placeholder="상품명"><input id="pShop" required placeholder="판매처"><input id="pPrice" required type="number" min="0" placeholder="상품가 (원)"><input id="pShip" type="number" min="0" value="0" placeholder="배송비 (원)"><input id="pRef" type="number" min="0" value="200000" placeholder="기준가 (원)"><input class="wide" id="pUrl" type="url" placeholder="상품 링크 (선택)"></div><div class="actions"><button type="button" id="cancel">취소</button><button class="primary">저장</button></div></form></dialog>
 <script>
 const products = [
-['본앤브레드 스페셜 숙성한우 A세트 / B세트','본앤브레드',198000,0],['설로인 숙성한우 선물세트 백화F / 맞춤C','설로인',194000,3000],['농협 안심 암소한우 1++등급 구이 1.6kg','농협몰',199000,0],['애명작컬렉션 VIP 대표 인기수산 3종 프리미엄 3호','현대H몰',205000,0],['제주애명작 초신선 프리미엄 특대 은갈치 1호','제주애명작',189000,4000],['오마누카 마누카꿀스틱 UMF 10+ 패키지','오마누카',179000,3000],['쿠진아트 디지털 에어프라이어 오븐','쿠팡',192000,0],['닌자 에어프라이어 크리스피 올인원 유리 멀티쿠커','롯데ON',185000,0],['쉘퍼 원터치형 음식물처리기 4L','G마켓',187000,3000],['브라이튼 웰턴 26인치 알루미늄 PC캐리어','11번가',183000,0],['뉴트리원 이병헌 자양강장&종합건강 2종 패키지','뉴트리원몰',200000,0],['뉴트리원 비비랩 리포좀 글루타치온 화이트 필름 10박스','CJ온스타일',190000,3000],['정관장 홍삼톤골드 + 홍삼대정 250g','정관장몰',199000,0],['정관장 홍삼톤청 + 홍삼대정 250g 2병','정관장몰',200000,0],['더고기 초이스구이용 LA갈비 4kg','더고기',196000,0],['포트메리온 보타닉가든 2인조 15p','신세계몰',188000,3000],['쿠첸 김연아 brain IH 압력밥솥 6인용','쿠첸몰',197000,0]
 ['본앤브레드 스페셜 숙성한우 A세트 / B세트','본앤브레드',198000,0],['설로인 숙성한우 선물세트 백화F / 맞춤C','설로인',194000,3000],['농협 안심 암소한우 1++등급 구이 1.6kg','농협몰',199000,0],['애명작컬렉션 VIP 대표 인기수산 3종 프리미엄 3호','현대H몰',205000,0],['제주애명작 초신선 프리미엄 특대 은갈치 1호','제주애명작',189000,4000],['오마누카 마누카꿀스틱 UMF 10+ 패키지','오마누카',179000,3000],['쿠진아트 디지털 에어프라이어 오븐','쿠팡',192000,0],['닌자 에어프라이어 크리스피 올인원 유리 멀티쿠커','롯데ON',185000,0],['쉘퍼 원터치형 음식물처리기 4L','G마켓',187000,3000],['브라이튼 웰턴 26인치 알루미늄 PC캐리어','11번가',183000,0],['뉴트리원 이병헌 자양강장&종합건강 2종 패키지','뉴트리원몰',200000,0],['뉴트리원 비비랩 리포좀 글루타치온 화이트 필름 10박스','CJ온스타일',190000,3000],['정관장 홍삼톤골드 + 홍삼대정 250g','정관장몰',199000,0],['정관장 홍삼톤청 + 홍삼대정 250g 2병','정관장몰',200000,0],['더고기 초이스구이용 LA갈비 4kg','더고기',196000,0],['포트메리온 보타닉가든 2인조 15p','신세계몰',188000,3000],['쿠첸 김연아 brain IH 압력밥솥 6인용','쿠첸몰',197000,0],['템퍼 Ergo Plus Pillow (에르고 플러스 베개)','네이버쇼핑',200000,0],['샤크닌자 스마트 파워 앤 초고속 블렌더 믹서기 CB350KR','네이버쇼핑',200000,0],['쿠쿠 미식 컬렉션 더 라이트 트윈프레셔 10인용 밥솥 (CRP-ST1095FB/W)','네이버쇼핑',200000,0],['리드볼트 캐리어 세트 (20인치+10인치)','네이버쇼핑',200000,0],['엄마네한우 명작 3호 고급모둠 1kg','네이버쇼핑',200000,0],['설로인 숙성한우 선물세트 기억 B','네이버쇼핑',200000,0],['내셔널지오그래픽 여행용 캐리어 2종 세트 (20인치+24인치)','네이버쇼핑',200000,0],['에스티로더 어드밴스드 나이트 리페어 30ml + 아이크림 세트','네이버쇼핑',200000,0],['iSi 클래식 탄산수 제조기 소다메이커 + 가스 1박스','네이버쇼핑',200000,0],['알텐바흐 시그니처 엑스쿠첸 멀티쿡 통5중 냄비 11L','네이버쇼핑',200000,0],['닌자 에어프라이어 크리스피 올인원 유리 컨테이너 3.8L+1.4L','네이버쇼핑',200000,0],['영광법성작 참굴비 명품 1호','네이버쇼핑',200000,0],['워커힐고메 숙성한우 구이&스테이크 세트 (1kg)','네이버쇼핑',200000,0],['딥티크 롬브르단로 바디 세트 (바디워시 150ml + 바디로션 250ml)','네이버쇼핑',200000,0]
 ].map(([name,shop,price,shipping])=>({name,shop,price,shipping,ref:200000,url:'https://search.shopping.naver.com/search/all?query='+encodeURIComponent(name),updated:new Date()}));
 const savedData = JSON.parse(localStorage.getItem('priceRadarData')||'null');
-let data = savedData ? [...savedData, ...products.filter(product => !savedData.some(item => item.name === product.name))] : products;
+const cleanSavedData = savedData?.filter(item => item.name?.trim() !== '쿠');
+let data = cleanSavedData ? [...cleanSavedData, ...products.filter(product => !cleanSavedData.some(item => item.name === product.name))] : products;
 const won=n=>new Intl.NumberFormat('ko-KR').format(n)+'원';
 function render(){ const q=search.value.trim().toLowerCase(), mode=sort.value; let list=data.filter(x=>(x.name+x.shop).toLowerCase().includes(q)); list.sort((a,b)=>mode==='name'?a.name.localeCompare(b.name,'ko'):mode==='saving'?(b.ref-b.price-b.shipping)-(a.ref-a.price-a.shipping):(a.price+a.shipping)-(b.price+b.shipping)); rows.innerHTML=list.map(x=>{const final=x.price+x.shipping, saved=x.ref-final;const url=x.url||('https://search.shopping.naver.com/search/all?query='+encodeURIComponent(x.name));return `<tr><td><div class="name">${x.name}</div><div class="category">기준가 ${won(x.ref)}${x.shipping?' · 배송비 '+won(x.shipping):' · 무료배송'}</div></td><td class="shop"><a class="shop-link" href="${url}" target="_blank" rel="noopener noreferrer" aria-label="${x.shop} 상품 열기">${x.shop}<span class="arrow" aria-hidden="true">↗</span></a></td><td class="price">${won(final)}</td><td class="saving">${saved>=0?won(saved)+' 절약':won(-saved)+' 높음'}</td><td class="updated">${new Date(x.updated).toLocaleString('ko-KR',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'})}</td></tr>`}).join(''); empty.hidden=!!list.length; count.textContent=data.length; lowest.textContent=data.length?won(Math.min(...data.map(x=>x.price+x.shipping))):'—'; updatedAt.textContent='방금'; }
 function save(){localStorage.setItem('priceRadarData',JSON.stringify(data));render()}
