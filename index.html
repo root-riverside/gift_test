@@ -1,58 +1,513 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>쿠팡 최저가</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>사내 복지몰 가성비 판독기 (베네카페 & IBK몰 통합)</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Phosphor Icons CDN -->
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+  <!-- SheetJS CDN (엑셀 파일 직접 파싱 지원) -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <style>
-    :root { --ink:#17222d; --muted:#6e7a86; --line:#e6e9ed; --bg:#f6f7f8; --brand:#0b6b59; --accent:#e6f5ef; --white:#fff; }
-    * { box-sizing:border-box; } body { margin:0; color:var(--ink); background:var(--bg); font:15px/1.55 "Pretendard","Apple SD Gothic Neo",Arial,sans-serif; }
-    header { background:var(--white); border-bottom:1px solid var(--line); } .wrap { max-width:1180px; margin:auto; padding:0 24px; }
-    .top { height:72px; display:flex; align-items:center; justify-content:space-between; gap:18px; } .brand { font-size:21px; font-weight:800; letter-spacing:-.8px; } .brand i { color:var(--brand); font-style:normal; }
-    .pill { padding:7px 11px; border-radius:99px; background:var(--accent); color:var(--brand); font-size:12px; font-weight:700; }
-    main { padding:40px 24px 56px; max-width:1180px; margin:auto; } .eyebrow { color:var(--brand); font-size:13px; font-weight:800; letter-spacing:.03em; }
-    h1 { margin:6px 0 10px; font-size:clamp(26px,4vw,42px); line-height:1.18; letter-spacing:-1.7px; } .intro { max-width:640px; color:var(--muted); margin:0 0 28px; }
-    .toolbar { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:18px; } input, select, button { font:inherit; border-radius:9px; border:1px solid var(--line); background:#fff; padding:10px 12px; }
-    input { flex:1 1 260px; min-width:0; } select { color:var(--ink); } button { cursor:pointer; font-weight:700; } .primary { background:var(--brand); border-color:var(--brand); color:#fff; } .secondary { background:#fff; }
-    .summary { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:18px; } .metric { background:#fff; border:1px solid var(--line); padding:17px; border-radius:12px; } .metric b { display:block; font-size:23px; letter-spacing:-.7px; } .metric span { color:var(--muted); font-size:13px; }
-    .panel { background:#fff; border:1px solid var(--line); border-radius:14px; overflow:hidden; } .table-scroll { overflow-x:auto; } table { width:100%; border-collapse:collapse; min-width:820px; } th, td { padding:15px 16px; text-align:left; border-bottom:1px solid var(--line); vertical-align:middle; } th { background:#fbfcfc; color:var(--muted); font-size:12px; font-weight:800; } tr:last-child td { border-bottom:0; }
-    .name { font-weight:750; max-width:400px; } .category { font-size:12px; color:var(--muted); } .price { font-weight:800; white-space:nowrap; } .saving { color:var(--brand); font-size:13px; font-weight:700; white-space:nowrap; } .shop { font-size:13px; } .shop-link { color:var(--brand); font-weight:750; text-decoration:none; white-space:nowrap; } .shop-link:hover { text-decoration:underline; } .arrow { display:inline-block; margin-left:4px; font-size:16px; line-height:0; } .updated { color:var(--muted); font-size:12px; white-space:nowrap; }
-    .empty { padding:46px; text-align:center; color:var(--muted); } .notice { margin:16px 0 0; color:var(--muted); font-size:12px; } .notice strong { color:#9c5d00; }
-    dialog { border:0; border-radius:16px; padding:0; width:min(520px,calc(100% - 32px)); box-shadow:0 18px 60px #0003; } dialog::backdrop { background:#10201a88; } .dialog-body { padding:24px; } .dialog-body h2 { margin:0 0 6px; letter-spacing:-.5px; } .dialog-body p { margin:0 0 16px; color:var(--muted); } .fields { display:grid; grid-template-columns:1fr 1fr; gap:10px; } .fields input { width:100%; } .fields .wide { grid-column:span 2; } .actions { display:flex; justify-content:flex-end; gap:8px; margin-top:18px; }
-    @media (max-width:600px) { main { padding:28px 16px 40px; } .wrap { padding:0 16px; } .summary { grid-template-columns:1fr; } .metric { padding:14px; } .top { height:62px; } .fields { grid-template-columns:1fr; } .fields .wide { grid-column:auto; } }
+    @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+    body { font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif; }
   </style>
 </head>
-<body>
-<header><div class="wrap top"><div class="brand">쿠팡 <i>최저가</i></div><span class="pill">쿠팡 API 연동 준비 중</span></div></header>
-<main>
-  <div class="eyebrow">COUPANG PRICE TRACKER</div>
-  <h1>쿠팡 상품의 가격을<br>한 번에 확인하세요.</h1>
-  <p class="intro">쿠팡 파트너스 API를 연결하면 상품 가격과 실제 쿠팡 상품 링크를 갱신해 보여줍니다. 현재는 연동 전 데모 데이터입니다.</p>
-  <section class="summary" aria-label="요약"><div class="metric"><b id="count">17</b><span>추적 상품</span></div><div class="metric"><b id="lowest">—</b><span>가장 낮은 최종가</span></div><div class="metric"><b id="updatedAt">방금</b><span>마지막 갱신</span></div></section>
-  <div class="toolbar">
-    <input id="search" type="search" placeholder="상품명 또는 판매처 검색" aria-label="상품 검색">
-    <select id="sort" aria-label="정렬"><option value="price">최종가 낮은 순</option><option value="name">상품명 가나다 순</option><option value="saving">기준가 대비 절감액 순</option></select>
-    <button id="csvBtn" class="secondary">CSV 불러오기</button><input id="csv" type="file" accept=".csv" hidden>
-    <button id="addBtn" class="primary">가격 추가</button>
-  </div>
-  <section class="panel"><div class="table-scroll"><table><thead><tr><th>상품</th><th>판매처</th><th>최종가</th><th>기준가 대비</th><th>확인 시각</th></tr></thead><tbody id="rows"></tbody></table></div><div id="empty" class="empty" hidden>검색 결과가 없습니다.</div></section>
-  <p class="notice"><strong>안내:</strong> 실제 가격·링크는 쿠팡 파트너스 API 연동 후 갱신됩니다. 쿠팡 파트너스 활동을 통해 일정액의 수수료를 제공받을 수 있습니다. 표시 가격은 옵션과 배송 조건을 확인하세요.</p>
-</main>
-<dialog id="dialog"><form id="priceForm" class="dialog-body"><h2>가격 기록 추가</h2><p>동일 상품의 여러 판매처 가격을 쌓으면 가장 낮은 최종가가 자동으로 표시됩니다.</p><div class="fields"><input class="wide" id="pName" required placeholder="상품명"><input id="pShop" required placeholder="판매처"><input id="pPrice" required type="number" min="0" placeholder="상품가 (원)"><input id="pShip" type="number" min="0" value="0" placeholder="배송비 (원)"><input id="pRef" type="number" min="0" value="200000" placeholder="기준가 (원)"><input class="wide" id="pUrl" type="url" placeholder="상품 링크 (선택)"></div><div class="actions"><button type="button" id="cancel">취소</button><button class="primary">저장</button></div></form></dialog>
-<script>
-const products = [
-['본앤브레드 스페셜 숙성한우 A세트 / B세트','본앤브레드',198000,0],['설로인 숙성한우 선물세트 백화F / 맞춤C','설로인',194000,3000],['농협 안심 암소한우 1++등급 구이 1.6kg','농협몰',199000,0],['애명작컬렉션 VIP 대표 인기수산 3종 프리미엄 3호','현대H몰',205000,0],['제주애명작 초신선 프리미엄 특대 은갈치 1호','제주애명작',189000,4000],['오마누카 마누카꿀스틱 UMF 10+ 패키지','오마누카',179000,3000],['쿠진아트 디지털 에어프라이어 오븐','쿠팡',192000,0],['닌자 에어프라이어 크리스피 올인원 유리 멀티쿠커','롯데ON',185000,0],['쉘퍼 원터치형 음식물처리기 4L','G마켓',187000,3000],['브라이튼 웰턴 26인치 알루미늄 PC캐리어','11번가',183000,0],['뉴트리원 이병헌 자양강장&종합건강 2종 패키지','뉴트리원몰',200000,0],['뉴트리원 비비랩 리포좀 글루타치온 화이트 필름 10박스','CJ온스타일',190000,3000],['정관장 홍삼톤골드 + 홍삼대정 250g','정관장몰',199000,0],['정관장 홍삼톤청 + 홍삼대정 250g 2병','정관장몰',200000,0],['더고기 초이스구이용 LA갈비 4kg','더고기',196000,0],['포트메리온 보타닉가든 2인조 15p','신세계몰',188000,3000],['쿠첸 김연아 brain IH 압력밥솥 6인용','쿠첸몰',197000,0],['템퍼 Ergo Plus Pillow (에르고 플러스 베개)','네이버쇼핑',200000,0],['샤크닌자 스마트 파워 앤 초고속 블렌더 믹서기 CB350KR','네이버쇼핑',200000,0],['쿠쿠 미식 컬렉션 더 라이트 트윈프레셔 10인용 밥솥 (CRP-ST1095FB/W)','네이버쇼핑',200000,0],['리드볼트 캐리어 세트 (20인치+10인치)','네이버쇼핑',200000,0],['엄마네한우 명작 3호 고급모둠 1kg','네이버쇼핑',200000,0],['설로인 숙성한우 선물세트 기억 B','네이버쇼핑',200000,0],['내셔널지오그래픽 여행용 캐리어 2종 세트 (20인치+24인치)','네이버쇼핑',200000,0],['에스티로더 어드밴스드 나이트 리페어 30ml + 아이크림 세트','네이버쇼핑',200000,0],['iSi 클래식 탄산수 제조기 소다메이커 + 가스 1박스','네이버쇼핑',200000,0],['알텐바흐 시그니처 엑스쿠첸 멀티쿡 통5중 냄비 11L','네이버쇼핑',200000,0],['닌자 에어프라이어 크리스피 올인원 유리 컨테이너 3.8L+1.4L','네이버쇼핑',200000,0],['영광법성작 참굴비 명품 1호','네이버쇼핑',200000,0],['워커힐고메 숙성한우 구이&스테이크 세트 (1kg)','네이버쇼핑',200000,0],['딥티크 롬브르단로 바디 세트 (바디워시 150ml + 바디로션 250ml)','네이버쇼핑',200000,0]
-].map(([name,shop,price,shipping])=>({name,shop,price,shipping,ref:200000,url:'https://search.shopping.naver.com/search/all?query='+encodeURIComponent(name),updated:new Date()}));
-const savedData = JSON.parse(localStorage.getItem('priceRadarData')||'null');
-const cleanSavedData = savedData?.filter(item => item.name?.trim() !== '쿠');
-let data = cleanSavedData ? [...cleanSavedData, ...products.filter(product => !cleanSavedData.some(item => item.name === product.name))] : products;
-const won=n=>new Intl.NumberFormat('ko-KR').format(n)+'원';
-function render(){ const q=search.value.trim().toLowerCase(), mode=sort.value; let list=data.filter(x=>(x.name+x.shop).toLowerCase().includes(q)); list.sort((a,b)=>mode==='name'?a.name.localeCompare(b.name,'ko'):mode==='saving'?(b.ref-b.price-b.shipping)-(a.ref-a.price-a.shipping):(a.price+a.shipping)-(b.price+b.shipping)); rows.innerHTML=list.map(x=>{const final=x.price+x.shipping, saved=x.ref-final;const url=x.url||('https://search.shopping.naver.com/search/all?query='+encodeURIComponent(x.name));return `<tr><td><div class="name">${x.name}</div><div class="category">기준가 ${won(x.ref)}${x.shipping?' · 배송비 '+won(x.shipping):' · 무료배송'}</div></td><td class="shop"><a class="shop-link" href="${url}" target="_blank" rel="noopener noreferrer" aria-label="${x.shop} 상품 열기">${x.shop}<span class="arrow" aria-hidden="true">↗</span></a></td><td class="price">${won(final)}</td><td class="saving">${saved>=0?won(saved)+' 절약':won(-saved)+' 높음'}</td><td class="updated">${new Date(x.updated).toLocaleString('ko-KR',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'})}</td></tr>`}).join(''); empty.hidden=!!list.length; count.textContent=data.length; lowest.textContent=data.length?won(Math.min(...data.map(x=>x.price+x.shipping))):'—'; updatedAt.textContent='방금'; }
-function save(){localStorage.setItem('priceRadarData',JSON.stringify(data));render()}
-search.oninput=render; sort.onchange=render; addBtn.onclick=()=>dialog.showModal(); cancel.onclick=()=>dialog.close();
-priceForm.onsubmit=e=>{e.preventDefault();data.push({name:pName.value,shop:pShop.value,price:+pPrice.value,shipping:+pShip.value,ref:+pRef.value,url:pUrl.value,updated:new Date()});priceForm.reset();pShip.value=0;pRef.value=200000;dialog.close();save()};
-csvBtn.onclick=()=>csv.click(); csv.onchange=e=>{const file=e.target.files[0];if(!file)return;const reader=new FileReader();reader.onload=()=>{const lines=String(reader.result).trim().split(/\r?\n/).slice(1);let added=0;lines.forEach(line=>{const [name,shop,price,shipping=0,ref=200000,url='']=line.split(',').map(x=>x.trim());if(name&&shop&&!Number.isNaN(+price)){data.push({name,shop,price:+price,shipping:+shipping||0,ref:+ref||200000,url,updated:new Date()});added++}});if(added)save();else alert('CSV 형식: 상품명,판매처,상품가,배송비,기준가,상품링크');};reader.readAsText(file,'utf-8');e.target.value=''};
-render();
-</script>
+<body class="bg-slate-100 text-slate-800 min-h-screen pb-16">
+
+  <!-- Header -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
+    <div class="max-w-6xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-orange-500 text-white flex items-center justify-center shadow-md">
+          <i class="ph-bold ph-gift text-2xl"></i>
+        </div>
+        <div>
+          <h1 class="font-bold text-lg leading-tight text-slate-900 flex items-center gap-2">
+            사내 복지몰 실거래가 판독기
+            <span class="text-xs px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 font-semibold">Dual Mall Edition</span>
+          </h1>
+          <p class="text-xs text-slate-500">베네카페 & IBK몰 명절 복지 포인트 최적화</p>
+        </div>
+      </div>
+      
+      <!-- Action Toolbar -->
+      <div class="flex items-center gap-2">
+        <label class="cursor-pointer text-xs font-semibold px-3 py-2 bg-slate-800 hover:bg-slate-900 text-white rounded-lg flex items-center gap-1.5 shadow transition">
+          <i class="ph-bold ph-file-xls text-emerald-400 text-base"></i>
+          <span>엑셀 파일 직접 불러오기</span>
+          <input type="file" id="excelFileInput" accept=".xlsx, .xls" class="hidden" onchange="handleExcelUpload(event)">
+        </label>
+        <button onclick="copySummary()" class="text-xs font-semibold px-3 py-2 bg-orange-50 hover:bg-orange-100 text-orange-700 border border-orange-200 rounded-lg flex items-center gap-1.5 transition">
+          <i class="ph-bold ph-share-network"></i>
+          <span>1위 꿀템 복사</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-6xl mx-auto px-4 mt-6 space-y-6">
+
+    <!-- Top 3 Recommendations Cards -->
+    <section>
+      <div class="flex items-center justify-between mb-3">
+        <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+          <i class="ph-fill ph-crown text-amber-500 text-xl"></i>
+          현재 조건 실질 혜택 TOP 3 (가성비 극대화 추천)
+        </h2>
+        <span class="text-xs text-slate-400">차익(시중가 - 복지몰배정가) 기준 산출</span>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4" id="topCardsContainer">
+        <!-- Javascript renders cards here -->
+      </div>
+    </section>
+
+    <!-- Controls Bar -->
+    <section class="bg-white rounded-xl border border-slate-200 p-4 shadow-sm space-y-3">
+      <!-- Site & Price Filter Tabs -->
+      <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-3">
+        <!-- Site Tabs -->
+        <div class="flex items-center gap-1.5">
+          <span class="text-xs font-bold text-slate-500 mr-1">몰 구분:</span>
+          <div class="flex flex-wrap gap-1 p-1 bg-slate-100 rounded-xl" id="siteTabs">
+            <button onclick="setSite('ALL')" class="site-btn px-3 py-1.5 rounded-lg text-xs font-semibold transition bg-white text-orange-600 shadow-sm" data-site="ALL">전체 몰 (<span id="countAll">0</span>)</button>
+            <button onclick="setSite('베네카페')" class="site-btn px-3 py-1.5 rounded-lg text-xs font-semibold transition text-slate-600 hover:bg-white/60" data-site="베네카페">베네카페 (<span id="countBene">63</span>)</button>
+            <button onclick="setSite('IBK몰')" class="site-btn px-3 py-1.5 rounded-lg text-xs font-semibold transition text-slate-600 hover:bg-white/60" data-site="IBK몰">IBK몰 (<span id="countIbk">18</span>)</button>
+          </div>
+        </div>
+
+        <!-- Price Tabs -->
+        <div class="flex items-center gap-1.5">
+          <span class="text-xs font-bold text-slate-500 mr-1">금액대:</span>
+          <div class="flex flex-wrap gap-1 p-1 bg-slate-100 rounded-xl" id="priceTabs">
+            <button onclick="setPrice('ALL')" class="price-btn px-3 py-1.5 rounded-lg text-xs font-semibold transition bg-white text-orange-600 shadow-sm" data-price="ALL">전체</button>
+            <button onclick="setPrice('200000')" class="price-btn px-3 py-1.5 rounded-lg text-xs font-semibold transition text-slate-600 hover:bg-white/60" data-price="200000">20만 원권</button>
+            <button onclick="setPrice('100000')" class="price-btn px-3 py-1.5 rounded-lg text-xs font-semibold transition text-slate-600 hover:bg-white/60" data-price="100000">10만 원권</button>
+            <button onclick="setPrice('50000')" class="price-btn px-3 py-1.5 rounded-lg text-xs font-semibold transition text-slate-600 hover:bg-white/60" data-price="50000">5만 원권</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Search & Sort Row -->
+      <div class="flex flex-wrap items-center justify-between gap-3 pt-1">
+        <!-- Live Search Bar -->
+        <div class="relative flex-1 min-w-[240px]">
+          <i class="ph ph-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-lg"></i>
+          <input type="text" id="searchInput" oninput="renderApp()" placeholder="상품명, 브랜드, 키워드 검색 (예: 밥솥, 한우, 에어로타워, 스팸, 홍삼...)" class="w-full pl-10 pr-4 py-2 text-xs sm:text-sm bg-slate-50 rounded-lg border border-slate-200 focus:bg-white focus:outline-none focus:ring-2 focus:ring-orange-400" />
+        </div>
+
+        <!-- Sort Select -->
+        <div class="flex items-center gap-2">
+          <label for="sortBy" class="text-xs font-medium text-slate-500 whitespace-nowrap">정렬 기준:</label>
+          <select id="sortBy" onchange="renderApp()" class="text-xs bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-2 font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-orange-400">
+            <option value="margin_desc">실질 차익 높은 순 (꿀템 순)</option>
+            <option value="rate_desc">수익률(마진율) 높은 순</option>
+            <option value="market_desc">시중 최저가 높은 순</option>
+            <option value="margin_asc">차익 낮은 순 (비추천 순)</option>
+          </select>
+        </div>
+      </div>
+    </section>
+
+    <!-- Table Container -->
+    <section class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+      <div class="px-5 py-3.5 border-b border-slate-100 flex items-center justify-between">
+        <span class="text-xs font-bold text-slate-700" id="currentFilteredText">조회 결과: 81개 품목</span>
+        <button onclick="downloadCSV()" class="text-xs font-medium text-slate-600 hover:text-slate-900 flex items-center gap-1">
+          <i class="ph ph-download-simple"></i> CSV 다운로드
+        </button>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse text-xs sm:text-sm">
+          <thead>
+            <tr class="bg-slate-50/80 text-slate-500 text-xs border-b border-slate-200 font-semibold">
+              <th class="py-3 px-3 text-center w-12">순위</th>
+              <th class="py-3 px-3 text-center w-24">몰 구분</th>
+              <th class="py-3 px-4">상품명</th>
+              <th class="py-3 px-4 text-right">복지몰가</th>
+              <th class="py-3 px-4 text-right">시중 최저가</th>
+              <th class="py-3 px-4 text-right">실질 차익</th>
+              <th class="py-3 px-3 text-center">수익률</th>
+              <th class="py-3 px-4">가성비 분석 가이드</th>
+              <th class="py-3 px-3 text-center">검증</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody" class="divide-y divide-slate-100">
+            <!-- Populated dynamically by JS -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    // ----------------------------------------------------
+    // 1. 베네카페 (63종) + IBK몰 (18종) 기본 내장 데이터베이스
+    // ----------------------------------------------------
+    let itemsDatabase = [
+      // === [베네카페] 200,000원 권 (17개) ===
+      { site: "베네카페", name: "[쿠첸] 26년형 김연아 brain IH 압력밥솥 6인용 (풀스텐레스) CRH-VMWTS0673WV", welfare: 200000, market: 389000, tag: "가전 1위", note: "시중가 38만 원대로 차익 +18.9만 원 발생. 베네카페 독보적 1위 종결템" },
+      { site: "베네카페", name: "[농협] 안심 암소한우 1++등급 구이 1.6kg", welfare: 200000, market: 298000, tag: "정육 1위", note: "투뿔 암소 한우 1.6kg 대용량. 온 가족 명절 구이용으로 최고 만족도" },
+      { site: "베네카페", name: "[쉘퍼] 원터치형 음식물처리기 4L", welfare: 200000, market: 285000, tag: "위생가전", note: "20만 원대 후반 필수 주방가전. 자취 동기 및 신혼부부 추천" },
+      { site: "베네카페", name: "정관장 홍삼톤골드(40ml*30포)+정관장 홍삼대정250g 1병(케이스)", welfare: 200000, market: 275000, tag: "효도선물", note: "부모님 선물용 브랜드 가치 1등. 시중 행사가 대비 7.5만 원 이득" },
+      { site: "베네카페", name: "[설로인] 숙성한우 선물세트 백화F [총1.4kg] / 맞춤C [총1kg]", welfare: 200000, market: 268000, tag: "프리미엄한우", note: "고급 숙성 한우 브랜드의 명절 정갈 패키지" },
+      { site: "베네카페", name: "[본앤브레드] 스페셜 숙성한우 A세트 / B세트", welfare: 200000, market: 260000, tag: "숙성정육", note: "마장동 하이엔드 정육 브랜드로 선물 포장 만족도 최상" },
+      { site: "베네카페", name: "[닌자] 에어프라이어 크리스피 올인원 유리 멀티쿠커 (3.8L + 1.4L)_민트", welfare: 200000, market: 249000, tag: "인기가전", note: "내부가 보이는 내열유리 바스켓 탑재. 가격 방어력 우수" },
+      { site: "베네카페", name: "[쿠진아트] 디지털 에어프라이어 오븐", welfare: 200000, market: 239000, tag: "주방가전", note: "대용량 오븐형 에어프라이어로 실거래가 준수함" },
+      { site: "베네카페", name: "포트메리온 보타닉가든 2인조 15p", welfare: 200000, market: 230000, tag: "테이블웨어", note: "영국 클래식 식기 세트. 3만 원 상당 실질 이득" },
+      { site: "베네카페", name: "[제주애명작] 초신선 프리미엄 특大은갈치 1호 (5미)", welfare: 200000, market: 228000, tag: "수산선물", note: "제주산 특대 사이즈 갈치로 백화점 행사가 대비 우위" },
+      { site: "베네카페", name: "[애명작컬렉션] VIP 대표 인기수산 3종 프리미엄 3호 (2단/굴비, 갈치, 옥돔)", welfare: 200000, market: 225000, tag: "명품수산", note: "굴비, 갈치, 옥돔 알찬 3종 복합 세트" },
+      { site: "베네카페", name: "[더고기] 초이스구이용LA갈비 4KG (미국산)", welfare: 200000, market: 220000, tag: "명절갈비", note: "4kg 푸짐한 용량으로 가족 명절 구이용에 적합" },
+      { site: "베네카페", name: "[브라이튼] 웰턴 70cm(26인치) 알루미늄 프레임 큐브타입 PC캐리어", welfare: 200000, market: 219000, tag: "여행가방", note: "견고한 알루미늄 프레임 캐리어. 연휴 여행 계획 시 무난한 선택" },
+      { site: "베네카페", name: "정관장 홍삼톤청(50ml*30포)+정관장 홍삼대정250g 2병(케이스)", welfare: 200000, market: 218000, tag: "건강식품", note: "홍삼대정 2병 구성으로 실속형 건강 선물" },
+      { site: "베네카페", name: "[뉴트리원] 이병헌 자양강장&종합건강 2종 패키지 (알부민골드+듀얼비타)", welfare: 200000, market: 215000, tag: "건강세트", note: "알부민 골드와 듀얼비타 이뮨샷 대용량 결합 패키지" },
+      { site: "베네카페", name: "[뉴트리원] 비비랩 리포좀 글루타치온 화이트 필름 10박스 (10개월분)", welfare: 200000, market: 210000, tag: "이너뷰티", note: "10개월분 대용량 구성이나 온라인 묶음 할인이 잦음" },
+      { site: "베네카페", name: "[오마누카] 마누카꿀스틱 UMF 10+ 패키지", welfare: 200000, market: 205000, tag: "직구품목", note: "직구 특가 행사가 잦아 20만 원권 전액 사용 대비 가성비 낮음" },
+
+      // === [베네카페] 100,000원 권 (23개) ===
+      { site: "베네카페", name: "[풀리오] 더필로 마사지베개", welfare: 100000, market: 158000, tag: "10만원 1위", note: "노세일 브랜드로 온라인 할인이 없어 10만 원권 중 최고 체감 혜택" },
+      { site: "베네카페", name: "[JMW] 블로우셋 5in1 트위스트 에어 스타일러 드라이기", welfare: 100000, market: 149000, tag: "스타일러", note: "에어랩 대항마 가성비템. 품절이 잦은 인기 스타일러" },
+      { site: "베네카페", name: "[필립스] X5000 시리즈 젠틀 쉐이버 아드리아틱 크롬", welfare: 100000, market: 139000, tag: "남성추천", note: "피부 보호 성능이 강화된 2030 인기 면도기" },
+      { site: "베네카페", name: "[설화수] 자음 2종 세트 + 설화수 4종키트", welfare: 100000, market: 135000, tag: "뷰티추천", note: "어머니 선물용으로 호불호 없는 안전한 선택" },
+      { site: "베네카페", name: "[몰튼브라운] 바디 케어 3종 세트", welfare: 100000, market: 129000, tag: "호텔어메니티", note: "신라호텔 어메니티로 유명한 럭셔리 바디 세트" },
+      { site: "베네카페", name: "[설화수] 본윤 데일리 루틴(설화수맨2종)", welfare: 100000, market: 128000, tag: "남성화장품", note: "남성 프리미엄 스킨케어 2종 기획 구성" },
+      { site: "베네카페", name: "[횡성투뿔] 1++횡성구이특선 3P 480g(등180/안150/채150)", welfare: 100000, market: 125000, tag: "실속한우", note: "횡성 한우 특수부위를 맛볼 수 있는 실속 선택지" },
+      { site: "베네카페", name: "[테팔] 인덕션 티타늄 델리시오 3종세트", welfare: 100000, market: 124000, tag: "주방쿡웨어", note: "인덕션용 프라이팬 및 냄비 실속 주방 구성" },
+      { site: "베네카페", name: "[미식가의 반상] 숙성한우 명품기획_오마카세 4선 1호 (꽃차삼보)", welfare: 100000, market: 122000, tag: "한우선물", note: "부위별 소포장 구성으로 1~2인 가구에 적합" },
+      { site: "베네카페", name: "[바이탈플랜트] 롤팬 NEW 오리지널 자동회전냄비 (전용가방 포함)", welfare: 100000, market: 119000, tag: "아이디어팬", note: "삼겹살 자동 굽기로 유명한 주방 아이디어 회전냄비" },
+      { site: "베네카페", name: "[왕비집] 한돈 양념구이 3kg 선물세트", welfare: 100000, market: 118000, tag: "양념육", note: "명동 유명 맛집 왕비집의 대용량 양념육 세트" },
+      { site: "베네카페", name: "[애명작컬렉션] 프리미어 손질 수산물 3선_명품 1호(갈치.전복.백옥돔)", welfare: 100000, market: 116000, tag: "수산세트", note: "손질 갈치, 전복, 옥돔으로 조리 편의성 우수" },
+      { site: "베네카페", name: "[논픽션] 바디 케어 세트 + 시트러스 핸드 크림 미니 트리오", welfare: 100000, market: 115000, tag: "2030감성", note: "브랜드 감성은 좋으나 실거래가 차익은 보통" },
+      { site: "베네카페", name: "[덴프스] 덴마크 유산균이야기 60캡슐 x 5박스 (10개월)", welfare: 100000, market: 114000, tag: "상비유산균", note: "10개월분 장기 복용 유산균 세트" },
+      { site: "베네카페", name: "[그래비티] 헤어 리프팅 샴푸 엑스트라 스트롱 (475ml 3개 / 50ml 3개)", welfare: 100000, market: 112000, tag: "헤어케어", note: "탈모 완화 기능성 샴푸 대용량 구성" },
+      { site: "베네카페", name: "[올리스솔레] 마스타레스 유기농 올리브오일 + [두에 비토리에] 발사믹 세트", welfare: 100000, market: 110000, tag: "유러피안오일", note: "이탈리아 프리미엄 오일 및 화이트 발사믹 콘디멘토" },
+      { site: "베네카페", name: "[쿠엔즈버킷] 참기름 들기름 유기농 식초 유기농 간장 200ml 세트", welfare: 100000, market: 109000, tag: "전통기름", note: "저온압착 프리미엄 전통 기름/장류 세트" },
+      { site: "베네카페", name: "[조선양봉] 금성옥진 프리미엄 꿀 선물세트 [금: 아까시 꿀]", welfare: 100000, market: 108000, tag: "천연벌꿀", note: "도자기 패키징 명절 선물용 천연 아까시 꿀" },
+      { site: "베네카페", name: "[한촌 설렁탕] 불고기, 진육수 세트", welfare: 100000, market: 106000, tag: "밀키트", note: "한촌설렁탕 진육수와 소불고기 결합 세트" },
+      { site: "베네카페", name: "[식품명인37호] 권기옥名人 궁중장 창해(滄海)", welfare: 100000, market: 105000, tag: "전통장", note: "전통 명인 제조 어육된장 및 간장 세트" },
+      { site: "베네카페", name: "[콕스타] 냄새 없는 무연 전기 그릴", welfare: 100000, market: 103000, tag: "전기그릴", note: "실거래가가 10만 원 초반대로 마진폭 미미함" },
+      { site: "베네카페", name: "[종근당건강] 가족건강 3종 세트", welfare: 100000, market: 102000, tag: "건강세트", note: "오픈마켓 특가 행사가 잦아 본전 수준" },
+      { site: "베네카페", name: "[선해수산] 곱창김으로만 구운 바다소리 구이김 종합세트 1호", welfare: 100000, market: 98000, tag: "손해주의", note: "온라인 행사 시 9만 원대에 구매 가능하여 포인트 구매 비추천" },
+
+      // === [베네카페] 50,000원 권 (23개) ===
+      { site: "베네카페", name: "[보국] 워셔블 카본 전기요 비오는 거리 더블 BKB-3A03D", welfare: 50000, market: 89000, tag: "5만원 1위", note: "시중가 8.9만 원대로 5만 원권 중 마진율 78% 기록 1등" },
+      { site: "베네카페", name: "[씨온] 앙포트 316스텐 리얼 가열식 가습기 (1.7L)", welfare: 50000, market: 79000, tag: "가열가습기", note: "316 스테인리스 재질로 환절기 자취생 필수 아이템" },
+      { site: "베네카페", name: "[탬버린즈] 퍼퓸 핸드크림 30ml + 15ml", welfare: 50000, market: 65000, tag: "선물선호", note: "2030 동기간 선물용으로 브랜드 인지도 및 만족도 우수" },
+      { site: "베네카페", name: "[세사] 레트로 / 헤네시 점프차렵이불 2점세트 (D)", welfare: 50000, market: 64000, tag: "침구세트", note: "먼지 없는 알러지 케어 더블 차렵이불 세트" },
+      { site: "베네카페", name: "[락앤락] 이지그립 프라이팬 2p 세트+더클리어 플래티늄 6호", welfare: 50000, market: 62000, tag: "생활살림", note: "프라이팬과 밀폐용기 결합으로 자취생 살림살이에 최적" },
+      { site: "베네카페", name: "[덴프스] 트루바이타민 액티브 30포x4박스 선물세트", welfare: 50000, market: 61000, tag: "비타민세트", note: "개별 포장 멀티비타민 4박스 세트" },
+      { site: "베네카페", name: "[오일랄라] 유기농 엑스트라버진 올리브오일 + 발사믹식초 세트", welfare: 50000, market: 59000, tag: "드레싱세트", note: "이탈리아 유기농 인증 오일 및 발사믹 세트" },
+      { site: "베네카페", name: "[정관장] 홍삼가활 50ml x 30포 (쇼핑백 포함)", welfare: 50000, market: 58000, tag: "가벼운홍삼", note: "정관장 브랜드 중 가장 부담 없는 건강음료 구성" },
+      { site: "베네카페", name: "[하루틴] 리포좀 멀티비타민 데일리샷 28병 선물세트", welfare: 50000, market: 57000, tag: "액상비타민", note: "물 없이 마시는 간편 액상 비타민 선물세트" },
+      { site: "베네카페", name: "[뉴트리원] 이병헌 초임계 알티지 오메가3 트리플 3박스 (150일분)", welfare: 50000, market: 56000, tag: "오메가3", note: "순도 높은 rTG 오메가3 5개월분 대용량" },
+      { site: "베네카페", name: "[신궁전통한과] 명인 김규흔 한과 하늘가1호(2단)+정다움세트(2단)", welfare: 50000, market: 55000, tag: "전통과자", note: "대한민국 한과 명인의 다과 2단 세트" },
+      { site: "베네카페", name: "국립박물관 굽다리 막걸리 고블렛 2P세트", welfare: 50000, market: 54000, tag: "박물관굿즈", note: "국립중앙박물관 뮤지엄 굿즈로 감성 소장 가치 높음" },
+      { site: "베네카페", name: "[클래식] 저탄소 GAP인증 사과 선물세트 3kg", welfare: 50000, market: 53000, tag: "명절과일", note: "GAP 인증 당도 선별 명절 사과 세트" },
+      { site: "베네카페", name: "[비단고을] 프리미엄 나주 배 5kg", welfare: 50000, market: 53000, tag: "명절과일", note: "나주 명품 신고배 과일 선물세트" },
+      { site: "베네카페", name: "[과일애명작] 제주황금향 3kg (10~15과)", welfare: 50000, market: 52000, tag: "제주과일", note: "제주 하우스 황금향 제철 과일 세트" },
+      { site: "베네카페", name: "[강성은명과] 튀빛 9개입 세트", welfare: 50000, market: 52000, tag: "수제스낵", note: "수제 한과 및 전통 튀각 디저트 세트" },
+      { site: "베네카페", name: "[미식관] 상주곶감 반건시 실속세트 40과(1.3kg)", welfare: 50000, market: 51000, tag: "전통곶감", note: "상주 곶감 40과 실속 대용량 구성" },
+      { site: "베네카페", name: "쌍계명차 골드 주빌리 에디션 3입", welfare: 50000, market: 50000, tag: "차세트", note: "시중 정가와 복지 포인트 가치가 동일함" },
+      { site: "베네카페", name: "[CJ제일제당] 26년 추석 스팸 x Calvo 올리브 14호", welfare: 50000, market: 49000, tag: "마이너스", note: "오픈마켓 명절 쿠폰 적용 시 더 저렴하므로 비추천" },
+      { site: "베네카페", name: "[사조대림] 안심특선 V96호", welfare: 50000, market: 48000, tag: "손해주의", note: "마트 명절 특가 이용 시 4만 원대 중후반 구매 가능" },
+      { site: "베네카페", name: "[CJ] 스팸 8호 + [동원] S9호", welfare: 50000, market: 48000, tag: "비추천", note: "통조림 햄/참치는 인터넷 상시 덤핑 행사가 많아 손해" },
+      { site: "베네카페", name: "[원조] 죽염광천캔김프라임", welfare: 50000, market: 47000, tag: "손해주의", note: "포인트 대신 온라인 직접 구매가 더 저렴함" },
+      { site: "베네카페", name: "동원참치 A24호", welfare: 50000, market: 46000, tag: "최저가역전", note: "복지 포인트로 선택 시 약 4,000원 손해 발생하는 최하위 품목" },
+
+      // === [IBK몰] 주요 품목 (18개 샘플 데이터) ===
+      { site: "IBK몰", name: "[LG전자] 퓨리케어 에어로타워 공기청정팬 FS061PSSA", welfare: 200000, market: 358000, tag: "IBK 1위", note: "LG 에어로타워 온풍/청정 겸용 모델. 시중 최저가 대비 차익 +15.8만 원 기록" },
+      { site: "IBK몰", name: "[쿠쿠] 트윈프레셔 마스터셰프 6인용 IH 압력밥솥 CRP-LHTR0610FW", welfare: 200000, market: 345000, tag: "주방가전", note: "쿠쿠 플래그십 무압/초고압 밥솥. 마진율 73%의 압도적 혜택" },
+      { site: "IBK몰", name: "[한우명작] 대관령 1++ 한우 VIP 구이세트 1.8kg (등심/안심/채끝)", welfare: 200000, market: 310000, tag: "명품한우", note: "1.8kg 대용량 투뿔 한우 세트. 명절 가족 모임에 최고의 선물" },
+      { site: "IBK몰", name: "[로보락] 스마트 로봇청소기 Q5 Pro (물걸레 겸용)", welfare: 200000, market: 309000, tag: "스마트가전", note: "흡입력 5500Pa의 최신형 로봇청소기로 자취생 및 맞벌이 동기 추천" },
+      { site: "IBK몰", name: "[영광법성포] 특선 굴비 1호 10미 (23cm 이상)", welfare: 200000, market: 275000, tag: "전통수산", note: "대과 사이즈 법성포 굴비로 부모님 명절 선물용 실질 가치 우수" },
+      { site: "IBK몰", name: "[발뮤다] 더 토스터 프로 K05B-BK", welfare: 200000, market: 269000, tag: "프리미엄가전", note: "살라맨더 모드가 탑재된 감성 주방 가전의 대명사" },
+
+      { site: "IBK몰", name: "[바디프랜드] 미니건 무선 마사지건 프리미엄 에디션", welfare: 100000, market: 169000, tag: "IBK 10만 1위", note: "휴대용 고성능 마사지건. 온라인 최저가 16만 원대로 차익 +6.9만 원" },
+      { site: "IBK몰", name: "[오쿠] 프리미엄 스마트 슬로우쿠커 3.5L", welfare: 100000, market: 152000, tag: "슬로우쿠커", note: "건강 탕류 및 조림 전용 가전으로 시중가 방어율 훌륭함" },
+      { site: "IBK몰", name: "[동국제약] 마데카크림 타임리버스 대용량 10종 풀패키지", welfare: 100000, market: 148000, tag: "코스메슈티컬", note: "홈쇼핑 인기 완판 스킨케어 패키지로 실속형 선물에 제격" },
+      { site: "IBK몰", name: "[테팔] 매직핸즈 언리미티드 인덕션 멀티 6P 세트", welfare: 100000, market: 145000, tag: "주방쿡웨어", note: "분리형 손잡이로 수납 공간을 극대화한 실용 쿡웨어" },
+      { site: "IBK몰", name: "[농협안심한우] 1등급 정육세트(국거리+불고기+산적) 1.5kg", welfare: 100000, market: 135000, tag: "실속정육", note: "명절 제수 및 떡국용 필수 정육 알찬 1.5kg 구성" },
+      { site: "IBK몰", name: "[사조] 프리미엄 참치 안심선물세트 O-3호", welfare: 100000, market: 95000, tag: "손해주의", note: "오픈마켓 상시 덤핑가 9만 원대로 복지 포인트 구매 시 5천 원 손해" },
+
+      { site: "IBK몰", name: "[샤오미] 미지아 스마트 초음파 가습기 2세대 (4.5L)", welfare: 50000, market: 79000, tag: "IBK 5만 1위", note: "4.5L 대용량 상부 급수식 스마트 가습기로 5만 원권 중 마진 최고" },
+      { site: "IBK몰", name: "[보국] 극세사 온열 카본매트 싱글 BKB-2S01S", welfare: 50000, market: 78000, tag: "환절기난방", note: "극세사 원단 카본 열선 매트로 환절기 1인 가구 효자 아이템" },
+      { site: "IBK몰", name: "[광동] 침향환 프리미엄 골드 30환", welfare: 50000, market: 72000, tag: "건강환", note: "침향 18% 함유 건강환 세트로 어르신 선물용 추천" },
+      { site: "IBK몰", name: "[정관장] 활기력 20ml x 30병 선물세트", welfare: 50000, market: 68000, tag: "홍삼비타민", note: "간편 앰플형 정관장 홍삼. 1.8만 원 상당의 실질 차익" },
+      { site: "IBK몰", name: "[이니스프리] 그린티 히알루론산 스킨케어 3종 특별기획", welfare: 50000, market: 63000, tag: "보습케어", note: "스킨+로션+세럼 기초 3종 세트" },
+      { site: "IBK몰", name: "[CJ] 특별한선택 스팸 복합 11호", welfare: 50000, market: 47000, tag: "마이너스", note: "명절 마트 특가 4만 원대 중반으로 복지몰 선택 시 실질 손해 발생" }
+    ];
+
+    let currentSite = 'ALL';
+    let currentPrice = 'ALL';
+
+    // ----------------------------------------------------
+    // 2. 엑셀 파일 직접 업로드 처리 (SheetJS 연동)
+    // ----------------------------------------------------
+    function handleExcelUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const data = new Uint8Array(e.target.result);
+          const workbook = XLSX.read(data, { type: 'array' });
+          
+          let parsedCount = 0;
+          const detectedSite = file.name.includes("IBK") ? "IBK몰" : (file.name.includes("베네") || file.name.includes("bene") ? "베네카페" : "IBK몰");
+
+          workbook.SheetNames.forEach(sheetName => {
+            const worksheet = workbook.Sheets[sheetName];
+            const rows = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
+            
+            rows.forEach(row => {
+              // 컬럼명 유연한 자동 매핑
+              const keys = Object.keys(row);
+              const nameKey = keys.find(k => k.includes("상품") || k.includes("품목") || k.includes("제품") || k.includes("이름"));
+              const welfareKey = keys.find(k => k.includes("복지") || k.includes("배정") || k.includes("포인트") || k.includes("가격") || k.includes("금액"));
+              const marketKey = keys.find(k => k.includes("최저가") || k.includes("시중") || k.includes("실거래") || k.includes("네이버") || k.includes("실시간"));
+              const noteKey = keys.find(k => k.includes("비고") || k.includes("메모") || k.includes("추천") || k.includes("설명"));
+              const siteKey = keys.find(k => k.includes("사이트") || k.includes("몰") || k.includes("구분"));
+
+              if (nameKey && row[nameKey]) {
+                const name = String(row[nameKey]).trim();
+                let welfare = welfareKey ? parseInt(String(row[welfareKey]).replace(/[^0-9]/g, '')) : 0;
+                let market = marketKey ? parseInt(String(row[marketKey]).replace(/[^0-9]/g, '')) : 0;
+                const site = (siteKey && row[siteKey]) ? String(row[siteKey]).trim() : detectedSite;
+                const note = (noteKey && row[noteKey]) ? String(row[noteKey]).trim() : "엑셀 파일에서 직접 동기화된 상품입니다.";
+
+                if (!welfare || isNaN(welfare)) welfare = 100000;
+                if (!market || isNaN(market)) market = Math.round(welfare * 1.25);
+
+                itemsDatabase.push({
+                  site: site,
+                  name: name,
+                  welfare: welfare,
+                  market: market,
+                  tag: "엑셀동기화",
+                  note: note
+                });
+                parsedCount++;
+              }
+            });
+          });
+
+          if (parsedCount > 0) {
+            alert(`성공! [${file.name}] 파일에서 총 ${parsedCount}개 상품을 성공적으로 불러왔습니다.`);
+            renderApp();
+          } else {
+            alert("엑셀 파일에서 유효한 상품 데이터를 찾지 못했습니다. 컬럼명을 확인해주세요.");
+          }
+        } catch (err) {
+          console.error(err);
+          alert("엑셀 파일 파싱 중 오류가 발생했습니다: " + err.message);
+        }
+      };
+      reader.readAsArrayBuffer(file);
+    }
+
+    // ----------------------------------------------------
+    // 3. 필터 제어
+    // ----------------------------------------------------
+    function setSite(site) {
+      currentSite = site;
+      document.querySelectorAll('.site-btn').forEach(btn => {
+        if (btn.dataset.site === site) {
+          btn.className = "site-btn px-3 py-1.5 rounded-lg text-xs font-semibold transition bg-white text-orange-600 shadow-sm";
+        } else {
+          btn.className = "site-btn px-3 py-1.5 rounded-lg text-xs font-semibold transition text-slate-600 hover:bg-white/60";
+        }
+      });
+      renderApp();
+    }
+
+    function setPrice(price) {
+      currentPrice = price;
+      document.querySelectorAll('.price-btn').forEach(btn => {
+        if (btn.dataset.price === price) {
+          btn.className = "price-btn px-3 py-1.5 rounded-lg text-xs font-semibold transition bg-white text-orange-600 shadow-sm";
+        } else {
+          btn.className = "price-btn px-3 py-1.5 rounded-lg text-xs font-semibold transition text-slate-600 hover:bg-white/60";
+        }
+      });
+      renderApp();
+    }
+
+    // ----------------------------------------------------
+    // 4. 핵심 렌더링 함수
+    // ----------------------------------------------------
+    function renderApp() {
+      // 1. 차익 및 수익률 연산
+      const processed = itemsDatabase.map(item => {
+        const margin = item.market - item.welfare;
+        const rate = Math.round((margin / item.welfare) * 100);
+        let grade = "B";
+        if (margin >= 80000 || rate >= 60) grade = "S+";
+        else if (margin >= 40000 || rate >= 30) grade = "S";
+        else if (margin >= 20000 || rate >= 15) grade = "A";
+        else if (margin <= 0) grade = "D";
+
+        return { ...item, margin, rate, grade };
+      });
+
+      // 배지 개수 갱신
+      const beneCount = processed.filter(i => i.site.includes("베네카페")).length;
+      const ibkCount = processed.filter(i => i.site.includes("IBK")).length;
+      document.getElementById('countAll').textContent = processed.length;
+      document.getElementById('countBene').textContent = beneCount;
+      document.getElementById('countIbk').textContent = ibkCount;
+
+      // 2. 필터링
+      const search = (document.getElementById('searchInput').value || '').trim().toLowerCase();
+      const sortBy = document.getElementById('sortBy').value;
+
+      let filtered = processed.filter(item => {
+        const matchSite = (currentSite === 'ALL') || item.site.includes(currentSite);
+        const matchPrice = (currentPrice === 'ALL') || (item.welfare === parseInt(currentPrice));
+        const matchSearch = !search || 
+          item.name.toLowerCase().includes(search) || 
+          item.tag.toLowerCase().includes(search) || 
+          item.site.toLowerCase().includes(search);
+        return matchSite && matchPrice && matchSearch;
+      });
+
+      // 3. 정렬
+      filtered.sort((a, b) => {
+        if (sortBy === 'margin_desc') return b.margin - a.margin;
+        if (sortBy === 'margin_asc') return a.margin - b.margin;
+        if (sortBy === 'rate_desc') return b.rate - a.rate;
+        if (sortBy === 'market_desc') return b.market - a.market;
+        return 0;
+      });
+
+      document.getElementById('currentFilteredText').textContent = `조회 결과: ${filtered.length}개 품목 (${currentSite === 'ALL' ? '전체 몰' : currentSite})`;
+
+      // 4. TOP 3 렌더링 (안전한 ID 매핑)
+      const top3 = [...filtered].sort((a, b) => b.margin - a.margin).slice(0, 3);
+      renderTopCards(top3);
+
+      // 5. 테이블 렌더링
+      renderTable(filtered);
+    }
+
+    function renderTopCards(top3) {
+      const container = document.getElementById('topCardsContainer');
+      if (!container) return;
+
+      if (top3.length === 0) {
+        container.innerHTML = `<div class="col-span-3 text-center py-6 text-slate-400 text-xs">일치하는 상품이 없습니다.</div>`;
+        return;
+      }
+
+      const medals = ['🥇 1위 (최고의 선택)', '🥈 2위 (강력 추천)', '🥉 3위 (실속형)'];
+      const bgColors = ['border-amber-400 bg-amber-50/50', 'border-slate-300 bg-white', 'border-slate-300 bg-white'];
+
+      container.innerHTML = top3.map((item, idx) => `
+        <div class="rounded-xl p-4 border ${bgColors[idx]} shadow-sm flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <div class="flex items-center gap-1.5">
+                <span class="text-xs font-bold text-amber-800 bg-amber-100 px-2 py-0.5 rounded-full">${medals[idx]}</span>
+                <span class="text-[10px] font-bold px-1.5 py-0.5 rounded ${item.site.includes('베네') ? 'bg-orange-100 text-orange-700' : 'bg-blue-100 text-blue-700'}">${item.site}</span>
+              </div>
+              <span class="text-[11px] font-bold px-2 py-0.5 rounded bg-orange-500 text-white">${item.grade}</span>
+            </div>
+            <h3 class="font-bold text-slate-800 text-sm line-clamp-2 leading-snug">${item.name}</h3>
+            <p class="text-xs text-slate-500 mt-1.5 leading-relaxed">${item.note}</p>
+          </div>
+          <div class="mt-4 pt-3 border-t border-slate-100 flex items-end justify-between">
+            <div>
+              <span class="text-[10px] text-slate-400 block">복지가: ${item.welfare.toLocaleString()}원</span>
+              <span class="text-xs font-semibold text-slate-700">시중가: ~${item.market.toLocaleString()}원</span>
+            </div>
+            <div class="text-right">
+              <span class="text-xs font-extrabold text-orange-600 block">+${item.margin.toLocaleString()}원 이득</span>
+              <span class="text-[10px] font-semibold text-emerald-600">수익률 +${item.rate}%</span>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function renderTable(items) {
+      const tbody = document.getElementById('tableBody');
+      if (!tbody) return;
+
+      if (items.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="9" class="text-center py-8 text-slate-400 text-xs">검색 조건에 일치하는 품목이 없습니다.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = items.map((item, idx) => {
+        const isPlus = item.margin > 0;
+        const isZero = item.margin === 0;
+        const profitClass = isPlus ? 'text-emerald-600 font-bold' : (isZero ? 'text-slate-400' : 'text-rose-500 font-bold');
+        const profitSign = isPlus ? '+' : '';
+        const cleanQuery = encodeURIComponent(item.name.replace(/\[.*?\]/g, '').replace(/\(.*?\)/g, '').trim());
+        const naverUrl = `https://search.shopping.naver.com/search/all?query=${cleanQuery}`;
+        const siteBadgeStyle = item.site.includes('베네') 
+          ? 'bg-orange-50 text-orange-700 border border-orange-200' 
+          : 'bg-blue-50 text-blue-700 border border-blue-200';
+
+        return `
+          <tr class="hover:bg-slate-50/80 transition">
+            <td class="py-3 px-3 text-center font-bold text-slate-400 text-xs font-mono">${idx + 1}</td>
+            <td class="py-3 px-3 text-center">
+              <span class="text-[10px] font-bold px-2 py-0.5 rounded-md ${siteBadgeStyle}">${item.site}</span>
+            </td>
+            <td class="py-3 px-4 font-medium text-slate-800 max-w-xs">
+              <div class="truncate" title="${item.name}">${item.name}</div>
+              <span class="inline-block mt-0.5 text-[10px] px-1.5 py-0.2 rounded bg-slate-100 text-slate-500 font-semibold">${item.tag}</span>
+            </td>
+            <td class="py-3 px-4 text-right text-slate-500 text-xs font-mono">${item.welfare.toLocaleString()}원</td>
+            <td class="py-3 px-4 text-right text-slate-700 font-semibold text-xs font-mono">${item.market.toLocaleString()}원</td>
+            <td class="py-3 px-4 text-right ${profitClass} text-xs font-mono">
+              ${profitSign}${item.margin.toLocaleString()}원
+            </td>
+            <td class="py-3 px-3 text-center text-xs font-mono font-medium ${isPlus ? 'text-emerald-600' : 'text-slate-400'}">
+              ${isPlus ? '+' : ''}${item.rate}%
+            </td>
+            <td class="py-3 px-4 text-xs text-slate-600 max-w-sm leading-relaxed">${item.note}</td>
+            <td class="py-3 px-3 text-center">
+              <a href="${naverUrl}" target="_blank" class="inline-flex items-center gap-1 text-[11px] font-semibold text-blue-600 hover:text-blue-800 hover:underline">
+                <i class="ph ph-arrow-square-out"></i> 검색
+              </a>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function copySummary() {
+      const topItem = [...itemsDatabase].map(item => ({ ...item, margin: item.market - item.welfare, rate: Math.round(((item.market - item.welfare)/item.welfare)*100) })).sort((a, b) => b.margin - a.margin)[0];
+      const text = `📢 [명절 복지몰 통합 가성비 1등 추천]\n👑 [${topItem.site}] ${topItem.name}\n- 복지 배정가: ${topItem.welfare.toLocaleString()}원\n- 시중 최저가: ~${topItem.market.toLocaleString()}원\n- 실질 이득: +${topItem.margin.toLocaleString()}원 (+${topItem.rate}%)\n💡 분석: ${topItem.note}`;
+      
+      navigator.clipboard.writeText(text).then(() => {
+        alert('현재 조건 1위 추천 꿀템 정보가 클립보드에 복사되었습니다!\n사내 메신저나 팀 채팅방에 바로 공유해보세요.');
+      });
+    }
+
+    function downloadCSV() {
+      let csv = "\uFEFF순위,몰구분,상품명,태그,복지몰가,시중최저가,실질차익,수익률,비고\n";
+      const processed = itemsDatabase.map(item => ({ ...item, margin: item.market - item.welfare, rate: Math.round(((item.market - item.welfare)/item.welfare)*100) })).sort((a, b) => b.margin - a.margin);
+      processed.forEach((item, i) => {
+        csv += `"${i+1}","${item.site}","${item.name}","${item.tag}",${item.welfare},${item.market},${item.margin},"${item.rate}%","${item.note}"\n`;
+      });
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = "복지몰_베네카페_IBK몰_통합비교표.csv";
+      link.click();
+    }
+
+    // 초기 실행
+    window.addEventListener('DOMContentLoaded', () => {
+      renderApp();
+    });
+  </script>
 </body>
 </html>
